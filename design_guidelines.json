@@ -1,0 +1,176 @@
+{
+  "app_name": "HabitLoop",
+  "personality": "4. Tactile / Playful",
+  "personality_one_liner": "A bold, friendly, and tactile space that makes building habits feel rewarding, energetic, and satisfying.",
+  "color": {
+    "surface": "#FAFAFA",
+    "onSurface": "#1A1D1E",
+    "surfaceSecondary": "#FFFFFF",
+    "onSurfaceSecondary": "#1A1D1E",
+    "surfaceTertiary": "#F0F0F5",
+    "onSurfaceTertiary": "#686D73",
+    "surfaceInverse": "#1A1D1E",
+    "onSurfaceInverse": "#FAFAFA",
+    "brand": "#00D084",
+    "brandPrimary": "#00D084",
+    "onBrandPrimary": "#053321",
+    "brandSecondary": "#00C2FF",
+    "onBrandSecondary": "#003647",
+    "brandTertiary": "#E5FAF2",
+    "onBrandTertiary": "#00A669",
+    "success": "#00D084",
+    "onSuccess": "#053321",
+    "warning": "#FFB320",
+    "onWarning": "#4D3400",
+    "error": "#FF6B6B",
+    "onError": "#4D1111",
+    "info": "#00C2FF",
+    "onInfo": "#003647",
+    "border": "#E8EAEF",
+    "borderStrong": "#D0D4DD",
+    "divider": "#F0F0F5",
+    "dark": {
+      "surface": "#121415",
+      "onSurface": "#F5F6F7",
+      "surfaceSecondary": "#1C1F21",
+      "onSurfaceSecondary": "#F5F6F7",
+      "surfaceTertiary": "#282C2F",
+      "onSurfaceTertiary": "#9BA1A6",
+      "surfaceInverse": "#F5F6F7",
+      "onSurfaceInverse": "#121415",
+      "brand": "#00E691",
+      "brandPrimary": "#00E691",
+      "onBrandPrimary": "#053321",
+      "brandSecondary": "#33CCFF",
+      "onBrandSecondary": "#002838",
+      "brandTertiary": "#113826",
+      "onBrandTertiary": "#00E691",
+      "success": "#00E691",
+      "onSuccess": "#053321",
+      "warning": "#FFC44D",
+      "onWarning": "#332200",
+      "error": "#FF8585",
+      "onError": "#4D1111",
+      "info": "#33CCFF",
+      "onInfo": "#002838",
+      "border": "#282C2F",
+      "borderStrong": "#3A3F43",
+      "divider": "#282C2F"
+    }
+  },
+  "typography": {
+    "displayFontFamily": "Figtree",
+    "textFontFamily": "Nunito",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Maintain generous breathing room to reinforce the tactile, friendly vibe. Avoid dense nesting.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 12,
+    "md": 16,
+    "lg": 24,
+    "pill": 999
+  },
+  "shadow_tier": "2",
+  "navigation": "bottom_tabs",
+  "icon_set": "Phosphor",
+  "glassmorphism": {
+    "enabled": true,
+    "do_s": [
+      "Use glass for the bottom tab bar to create depth when lists scroll underneath.",
+      "Use glass for floating action buttons (FAB) over a brandTertiary base.",
+      "Use glass for bottom sheet headers."
+    ],
+    "dont_s": [
+      "Do not use glass for individual habit cards.",
+      "Do not blur forms or standard scrollable content."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "expo-glass-effect",
+      "android": "expo-blur",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "expo-blur",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Today",
+      "purpose": "Action-oriented dashboard listing active habits for today with quick-log controls.",
+      "states": {
+        "loading": "Centered brand-colored activity indicator with playful pulsing animation.",
+        "empty": "3D illustration with a friendly prompt ('No habits yet! Let\\'s start small.') and a large Primary FAB.",
+        "error": "Soft error message with a retry button in brandSecondary."
+      },
+      "layout": "Header with 'Today' title and large current streak count. Vertical scrollable list of Habit Cards. Each card (surfaceSecondary) is chunky, features a large emoji on the left, habit name, progress ring, and a pill-shaped quick-log stepper (+1 or +15m) on the right. FAB (brandPrimary) floats at bottom right for adding a habit. Pad bottom scroll with extra space for FAB/TabBar."
+    },
+    {
+      "name": "Habits",
+      "purpose": "Global list and CRUD management for all habits.",
+      "states": {
+        "loading": "Skeleton rows reflecting the chunky card structure.",
+        "empty": "3D illustration showing a blank list. 'Your routine is a blank slate.'",
+        "error": "Error message with soft warning colors and retry CTA."
+      },
+      "layout": "Grid or vertical list of all habits. Filter chips at the top (All, Fitness, Mindfulness, etc.). Tap a card to open the bottom sheet or detail view for Edit/Archive."
+    },
+    {
+      "name": "Stats (Detail & Global)",
+      "purpose": "Visualize history, progress, and consistency over time via heatmaps and streak badges.",
+      "states": {
+        "loading": "Skeleton grids representing the heatmap.",
+        "empty": "Illustration of a seed sprouting. 'Log data to see your garden grow!'",
+        "error": "Failed to load stats message with a retry button."
+      },
+      "layout": "Global Stats: Weekly completion rate bar chart, per-habit summary list. Habit Detail: 7-row horizontally scrolling GitHub-style heatmap. Colors scale from surfaceTertiary (missed) -> brandTertiary (partial) -> brandPrimary (completed). Display current & longest streak prominently in oversized tactile badges. Chart showing last 30 days progress below heatmap."
+    }
+  ],
+  "images": {
+    "empty_today": {
+      "url": "https://images.pexels.com/photos/20279300/pexels-photo-20279300.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "dark": "https://images.pexels.com/photos/20279300/pexels-photo-20279300.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=650&w=940",
+      "alt": "3D illustration of a checklist with checkmarks"
+    },
+    "empty_stats": {
+      "url": "https://images.unsplash.com/photo-1633794036121-e278381835a8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxwbGF5ZnVsJTIwM2QlMjBpbGx1c3RyYXRpb24lMjBncmVlbiUyMHBsYW50JTIwZ29hbCUyMHN1Y2Nlc3N8ZW58MHx8fHwxNzg3NTAyMDkxfDA&ixlib=rb-4.1.0&q=85",
+      "dark": "https://images.unsplash.com/photo-1633794036121-e278381835a8?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA2OTV8MHwxfHNlYXJjaHwzfHxwbGF5ZnVsJTIwM2QlMjBpbGx1c3RyYXRpb24lMjBncmVlbiUyMHBsYW50JTIwZ29hbCUyMHN1Y2Nlc3N8ZW58MHx8fHwxNzg3NTAyMDkxfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Playful 3D green geometric shapes representing growth"
+    }
+  },
+  "haptics": {
+    "quick_log_tap": "light",
+    "habit_complete": "success",
+    "tab_change": "selection",
+    "fab_tap": "medium",
+    "habit_archive": "warning"
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the Tactile / Playful personality (4). Maintain chunky radius (sm:12, md:16, lg:24, pill:999).",
+    "Implement the Today screen as a 'Bento-style' layout if possible, or use thick, card-like rows with plenty of internal padding.",
+    "The Heatmap (GitHub-style) should be 7 rows tall, scrolling horizontally. Map the 'missed' state to surfaceTertiary (which is a neutral gray, as requested). Map activity tiers to brandTertiary and brandPrimary.",
+    "For the quick-log component on the habit card, use a pill-shaped container with a + stepper. When the daily target is reached, trigger a success haptic and fill the progress ring dynamically.",
+    "Use Phosphor icons (filled for active, outlined for inactive).",
+    "Since Android performance is a key concern for long-term use, ensure the GitHub heatmap uses lightweight components (like small localized Views or React Native SVGs) and avoids heavy re-renders when horizontally scrolling.",
+    "Make sure forms/inputs have labels above inputs and submit buttons are pinned to the keyboard.",
+    "Emoji should be handled natively but rendered at a large size inside a brandTertiary tinted circular container for visual pop."
+  ]
+}
