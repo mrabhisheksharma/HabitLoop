@@ -1,0 +1,8 @@
+{
+  "name": "HabitLoop",
+  "description": "Tactile and playful habit tracker with daily logging, streaks, GitHub-style heatmaps, weekly stats, and category organization.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
