@@ -27,6 +27,12 @@
       "purpose": "any"
     },
     {
+      "src": "/pwa-maskable-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
       "src": "/pwa-maskable-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
@@ -45,30 +51,21 @@
       "short_name": "Today",
       "description": "Quickly check in and log today's active habits",
       "url": "/?view=today",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Habit Calendar",
       "short_name": "Calendar",
       "description": "View GitHub heatmap and monthly consistency calendar",
       "url": "/?view=calendar",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
     },
     {
       "name": "Analytics & Badges",
       "short_name": "Analytics",
       "description": "Inspect streaks, milestones, and habit analytics",
       "url": "/?view=analytics",
-      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
-    }
-  ],
-  "screenshots": [
-    {
-      "src": "/app-image.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "form_factor": "wide",
-      "label": "HabitLoop Desktop Dashboard"
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192", "type": "image/png" }]
     }
   ]
 }

@@ -1,25 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="bgGradMaskable" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#818CF8" />
       <stop offset="100%" stop-color="#4F46E5" />
     </linearGradient>
-    <linearGradient id="infinityGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+    <linearGradient id="infinityGradMaskable" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#FFFFFF" />
       <stop offset="100%" stop-color="#EEF2FF" />
     </linearGradient>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+    <filter id="shadowMaskable" x="-20%" y="-20%" width="140%" height="140%">
       <feDropShadow dx="0" dy="12" stdDeviation="16" flood-color="#312E81" flood-opacity="0.4" />
     </filter>
   </defs>
   
-  <rect width="512" height="512" rx="128" fill="url(#bgGrad)" />
+  <!-- Full bleed for maskable icon -->
+  <rect width="512" height="512" fill="url(#bgGradMaskable)" />
   
-  <g transform="translate(256, 256) scale(14) translate(-12, -12)" filter="url(#shadow)">
+  <g transform="translate(256, 256) scale(11) translate(-12, -12)" filter="url(#shadowMaskable)">
     <path
       d="M12 12c-2-2.67-4-4-6-4a4 4 0 1 0 0 8c2 0 4-1.33 6-4Zm0 0c2 2.67 4 4 6 4a4 4 0 0 0 0-8c-2 0-4 1.33-6 4Z"
       fill="none"
-      stroke="url(#infinityGrad)"
+      stroke="url(#infinityGradMaskable)"
       stroke-width="2.2"
       stroke-linecap="round"
       stroke-linejoin="round"
