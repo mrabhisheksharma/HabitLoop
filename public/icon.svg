@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="habitGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818CF8"/>
+      <stop offset="100%" stop-color="#4F46E5"/>
+    </linearGradient>
+    <linearGradient id="ringGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#22C55E"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#4338CA" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  
+  <!-- App Icon Background -->
+  <rect width="512" height="512" rx="128" fill="url(#habitGrad)"/>
+  
+  <!-- Outer glowing accent ring -->
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#EEF2FF" stroke-width="28" stroke-dasharray="880 180" stroke-linecap="round" filter="url(#shadow)"/>
+  
+  <!-- Active Progress Accent Arc -->
+  <circle cx="256" cy="256" r="160" fill="none" stroke="url(#ringGrad)" stroke-width="28" stroke-dasharray="550 510" stroke-linecap="round"/>
+  
+  <!-- Center Checkmark / Loop Icon -->
+  <path d="M190 260 L235 305 L330 200" fill="none" stroke="#FFFFFF" stroke-width="36" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Little Sparkle Star in upper right -->
+  <circle cx="355" cy="155" r="16" fill="#FDE047"/>
+</svg>
