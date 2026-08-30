@@ -71,6 +71,7 @@ function MainContent() {
               <CalendarView
                 onOpenDetail={(id) => setSelectedHabitId(id)}
                 onOpenNewHabit={handleOpenNewHabit}
+                onOpenEdit={handleEditHabit}
               />
             )}
             {activeTab === "habits" && (

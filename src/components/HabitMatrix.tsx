@@ -7,6 +7,7 @@ import { isDayComplete, currentStreak } from "../utils/streaks";
 import { isToday, isFuture, DATE_FMT, isDateEditable, isDateOlderThan7Days } from "../utils/date";
 import { categoryColor } from "../constants";
 import { formatValue } from "../utils/format";
+import { getTargetForDate } from "../utils/target";
 
 interface Props {
   year: number;
@@ -102,7 +103,7 @@ export function HabitMatrix({ year, month, onOpenDetail }: Props) {
             {activeHabits.map((habit) => {
               const catCol = categoryColor(habit.category);
               const logs = logsForHabit(habit.id);
-              const streak = currentStreak(logs, habit.target_value);
+              const streak = currentStreak(logs, habit);
 
               return (
                 <tr key={habit.id} className="group hover:bg-[#F8FAFC] dark:hover:bg-[#0F172A]/40 transition-colors">
@@ -135,8 +136,9 @@ export function HabitMatrix({ year, month, onOpenDetail }: Props) {
 
                   {/* Day Cells */}
                   {days.map((d) => {
+                    const target = getTargetForDate(habit, d.dateStr);
                     const val = getValue(habit.id, d.dateStr);
-                    const done = isDayComplete(val, habit.target_value);
+                    const done = isDayComplete(val, target);
                     const hasVal = val > 0;
 
                     let bg = "bg-[#F8FAFC] dark:bg-[#0F172A]/50 hover:bg-[#E2E8F0] dark:hover:bg-[#334155]";

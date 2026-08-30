@@ -1,11 +1,12 @@
 import React, { useMemo } from "react";
 import dayjs from "dayjs";
-import { Check, Sparkles } from "lucide-react";
+import { Check } from "lucide-react";
 import { useHabits } from "../store/HabitStore";
 import { Habit } from "../types";
 import { isDayComplete, completionRatio } from "../utils/streaks";
-import { isToday, isFuture, DATE_FMT } from "../utils/date";
-import { formatValue } from "../utils/format";
+import { isToday, isFuture, DATE_FMT, prettyDate } from "../utils/date";
+import { formatValue, targetLabel } from "../utils/format";
+import { getTargetForDate } from "../utils/target";
 
 interface Props {
   year: number;
@@ -14,6 +15,113 @@ interface Props {
 }
 
 const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/**
+ * Returns GitHub-style heatmap styling classes based on completion percentage (0 to 1)
+ */
+export function getGithubHeatmapStyle(
+  ratio: number,
+  isCurrentMonth: boolean,
+  isFutureDate: boolean,
+  isTodayDate: boolean
+): {
+  bg: string;
+  border: string;
+  text: string;
+  level: number; // 0 to 5
+} {
+  if (!isCurrentMonth) {
+    return {
+      bg: "bg-[#F8FAFC]/40 dark:bg-[#0B0F17]/20 opacity-30",
+      border: "border-transparent",
+      text: "text-[#94A3B8] dark:text-[#64748B]",
+      level: 0,
+    };
+  }
+
+  if (isFutureDate) {
+    return {
+      bg: "bg-[#F8FAFC]/50 dark:bg-[#0F172A]/30",
+      border: "border-dashed border-[#E2E8F0] dark:border-[#334155]",
+      text: "text-[#94A3B8] dark:text-[#64748B]",
+      level: 0,
+    };
+  }
+
+  if (ratio <= 0) {
+    // Level 0: 0% / no completions
+    return {
+      bg: isTodayDate
+        ? "bg-[#EEF2FF]/70 dark:bg-[#312E81]/30"
+        : "bg-[#F8FAFC] dark:bg-[#1E293B]/70",
+      border: isTodayDate
+        ? "border-2 border-[#6366F1] dark:border-[#818CF8]"
+        : "border border-[#E2E8F0] dark:border-[#334155]",
+      text: isTodayDate
+        ? "text-[#4F46E5] dark:text-[#A5B4FC]"
+        : "text-[#64748B] dark:text-[#94A3B8]",
+      level: 0,
+    };
+  }
+
+  if (ratio < 0.26) {
+    // Level 1: 1% - 25% (Lightest green tint)
+    return {
+      bg: "bg-[#DCFCE7] dark:bg-[#064E3B]/60",
+      border: isTodayDate
+        ? "border-2 border-[#6366F1] dark:border-[#818CF8]"
+        : "border border-[#BBF7D0] dark:border-[#047857]",
+      text: "text-[#166534] dark:text-[#86EFAC]",
+      level: 1,
+    };
+  }
+
+  if (ratio < 0.51) {
+    // Level 2: 26% - 50% (Light-medium green)
+    return {
+      bg: "bg-[#86EFAC] dark:bg-[#047857]/80",
+      border: isTodayDate
+        ? "border-2 border-[#6366F1] dark:border-[#818CF8]"
+        : "border border-[#4ADE80] dark:border-[#059669]",
+      text: "text-[#14532D] dark:text-[#ECFDF5]",
+      level: 2,
+    };
+  }
+
+  if (ratio < 0.76) {
+    // Level 3: 51% - 75% (Medium vibrant green)
+    return {
+      bg: "bg-[#22C55E] dark:bg-[#10B981]",
+      border: isTodayDate
+        ? "border-2 border-[#4338CA] dark:border-[#C7D2FE]"
+        : "border border-[#16A34A] dark:border-[#059669]",
+      text: "text-white",
+      level: 3,
+    };
+  }
+
+  if (ratio < 1) {
+    // Level 4: 76% - 99% (Rich deep green)
+    return {
+      bg: "bg-[#16A34A] dark:bg-[#059669]",
+      border: isTodayDate
+        ? "border-2 border-[#4338CA] dark:border-[#C7D2FE]"
+        : "border border-[#15803D] dark:border-[#047857]",
+      text: "text-white",
+      level: 4,
+    };
+  }
+
+  // Level 5: 100% Complete (Deepest solid green)
+  return {
+    bg: "bg-[#15803D] dark:bg-[#047857]",
+    border: isTodayDate
+      ? "border-2 border-[#4338CA] dark:border-[#C7D2FE]"
+      : "border border-[#14532D] dark:border-[#34D399]",
+    text: "text-white",
+    level: 5,
+  };
+}
 
 export function CalendarMonthGrid({
   year,
@@ -73,7 +181,7 @@ export function CalendarMonthGrid({
   return (
     <div className="w-full select-none">
       {/* Weekday headers */}
-      <div className="grid grid-cols-7 gap-1.5 sm:gap-2 mb-2 text-center">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-center">
         {WEEKDAYS.map((w) => (
           <div
             key={w}
@@ -85,154 +193,93 @@ export function CalendarMonthGrid({
       </div>
 
       {/* Calendar Grid Cells */}
-      <div className="grid grid-cols-7 gap-1.5 sm:gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {daysGrid.map((cell) => {
           const { dateStr, dayNumber, isCurrentMonth } = cell;
           const today = isToday(dateStr);
           const future = isFuture(dateStr);
 
-          // Calculate completion and x/y metrics for this date
-          let isComplete = false;
+          // Calculate completion ratio and details
           let completionPct = 0;
           let doneCount = 0;
           let totalCount = activeHabits.length;
-          let progressLabel = "";
+          let tooltipInfo = "";
 
           if (!future && isCurrentMonth) {
             if (filteredHabit) {
+              const target = getTargetForDate(filteredHabit, dateStr);
               const val = getValue(filteredHabit.id, dateStr);
-              isComplete = isDayComplete(val, filteredHabit.target_value);
-              completionPct = completionRatio(val, filteredHabit.target_value);
-              doneCount = isComplete ? 1 : 0;
+              const done = isDayComplete(val, target);
+              completionPct = completionRatio(val, target);
+              doneCount = done ? 1 : 0;
               totalCount = 1;
-              progressLabel = `${formatValue(val, filteredHabit)} / ${formatValue(filteredHabit.target_value ?? 1, filteredHabit)}`;
+              tooltipInfo = `${prettyDate(dateStr)}: ${filteredHabit.name} — ${formatValue(val, filteredHabit)} / ${targetLabel(target, filteredHabit)} (${Math.round(completionPct * 100)}%)`;
             } else if (activeHabits.length > 0) {
               activeHabits.forEach((h) => {
+                const target = getTargetForDate(h, dateStr);
                 const val = getValue(h.id, dateStr);
-                if (isDayComplete(val, h.target_value)) {
+                if (isDayComplete(val, target)) {
                   doneCount++;
                 }
               });
-              isComplete = doneCount === totalCount && totalCount > 0;
               completionPct = totalCount > 0 ? doneCount / totalCount : 0;
-              progressLabel = `${doneCount}/${totalCount}`;
+              tooltipInfo = `${prettyDate(dateStr)}: ${doneCount} of ${totalCount} habits completed (${Math.round(completionPct * 100)}%)`;
             }
-          }
-
-          // Cell styling rules
-          let bgClass = "bg-white dark:bg-[#1E293B]";
-          let borderClass = "border-[#E2E8F0] dark:border-[#334155]";
-          let textClass = "text-[#0F172A] dark:text-[#F8FAFC]";
-
-          if (!isCurrentMonth) {
-            bgClass = "bg-[#F8FAFC]/40 dark:bg-[#0B0F17]/30 opacity-30";
-            borderClass = "border-transparent";
-            textClass = "text-[#94A3B8] dark:text-[#64748B]";
           } else if (future) {
-            bgClass = "bg-[#F8FAFC] dark:bg-[#0F172A]/40 opacity-60";
-            borderClass = "border-[#E2E8F0] dark:border-[#334155]";
-            textClass = "text-[#64748B] dark:text-[#94A3B8]";
-          } else if (isComplete) {
-            bgClass = "bg-[#6366F1] text-white shadow-xs";
-            borderClass = "border-[#6366F1]";
-            textClass = "text-white";
-          } else if (completionPct >= 0.5) {
-            bgClass = "bg-[#EEF2FF] dark:bg-[#312E81]/50";
-            borderClass = "border-[#818CF8]/60 dark:border-[#4F46E5]/60";
-            textClass = "text-[#0F172A] dark:text-[#F8FAFC]";
-          } else if (doneCount > 0) {
-            bgClass = "bg-[#F8FAFC] dark:bg-[#1E1B4B]/40";
-            borderClass = "border-[#C7D2FE] dark:border-[#312E81]";
-            textClass = "text-[#0F172A] dark:text-[#F8FAFC]";
+            tooltipInfo = `${prettyDate(dateStr)} (Upcoming)`;
           }
 
-          if (today) {
-            borderClass = isComplete
-              ? "ring-2 ring-amber-400 border-[#6366F1]"
-              : "ring-2 ring-[#6366F1] border-[#6366F1]";
-          }
-
-          const pctRounded = Math.round(completionPct * 100);
+          const style = getGithubHeatmapStyle(
+            completionPct,
+            isCurrentMonth,
+            future,
+            today
+          );
 
           return (
             <div
               key={dateStr}
-              className={`relative min-h-[72px] sm:min-h-[86px] rounded-2xl p-2 border transition-all flex flex-col justify-between ${bgClass} ${borderClass}`}
+              title={tooltipInfo}
+              className={`relative aspect-square min-h-[46px] sm:min-h-[58px] rounded-xl p-1 sm:p-1.5 transition-colors flex flex-col justify-between overflow-hidden shadow-2xs ${style.bg} ${style.border}`}
             >
-              {/* Day Number and Today indicator */}
-              <div className="w-full flex items-center justify-between">
-                <span
-                  className={`text-xs sm:text-sm font-display font-black ${
-                    today && !isComplete
-                      ? "text-[#6366F1] dark:text-[#818CF8]"
-                      : textClass
-                  }`}
-                >
-                  {dayNumber}
-                </span>
-
-                {today && (
+              {/* Day Number and Today Indicator */}
+              <div className="w-full flex items-center justify-between pointer-events-none">
+                {today ? (
+                  <div className="flex items-center gap-1">
+                    <span className="w-5 h-5 sm:w-5.5 sm:h-5.5 rounded-full bg-[#6366F1] text-white flex items-center justify-center text-[11px] sm:text-xs font-display font-black shadow-xs">
+                      {dayNumber}
+                    </span>
+                    <span className="hidden sm:inline text-[9px] font-black text-[#6366F1] dark:text-[#A5B4FC] uppercase tracking-tight">
+                      Today
+                    </span>
+                  </div>
+                ) : (
                   <span
-                    className={`text-[8px] sm:text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full ${
-                      isComplete
-                        ? "bg-white/20 text-white"
-                        : "bg-[#EEF2FF] dark:bg-[#312E81] text-[#4F46E5] dark:text-[#A5B4FC]"
-                    }`}
+                    className={`text-xs sm:text-sm font-display font-black leading-none pl-0.5 pt-0.5 ${style.text}`}
                   >
-                    Today
+                    {dayNumber}
                   </span>
                 )}
               </div>
 
-              {/* Day Progress: X/Y & % Details directly on tile */}
-              {isCurrentMonth && !future ? (
-                <div className="w-full flex flex-col items-center justify-center my-auto pt-1 pb-0.5">
-                  {isComplete ? (
-                    <div className="flex flex-col items-center">
-                      <div className="flex items-center gap-1 font-display font-black text-xs sm:text-sm text-white">
-                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 stroke-[3]" />
-                        <span>100%</span>
-                      </div>
-                      <span className="text-[10px] font-bold text-white/90">
-                        {progressLabel} done
-                      </span>
+              {/* Center / Bottom Activity Visual */}
+              <div className="w-full flex items-center justify-center pb-0.5 pointer-events-none">
+                {isCurrentMonth && !future ? (
+                  style.level === 5 ? (
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-white/25 flex items-center justify-center">
+                      <Check className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 stroke-[3] text-white" />
                     </div>
-                  ) : totalCount > 0 ? (
-                    <div className="w-full text-center">
-                      <div className="flex items-center justify-center gap-1">
-                        <span className="font-display font-black text-xs sm:text-sm text-[#0F172A] dark:text-[#F8FAFC]">
-                          {progressLabel}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold ${
-                            completionPct > 0
-                              ? "text-[#6366F1] dark:text-[#A5B4FC]"
-                              : "text-[#94A3B8]"
-                          }`}
-                        >
-                          ({pctRounded}%)
-                        </span>
-                      </div>
-
-                      {/* Mini visual progress bar */}
-                      <div className="w-full bg-[#E2E8F0] dark:bg-[#334155] h-1.5 rounded-full mt-1 overflow-hidden">
-                        <div
-                          className="bg-[#6366F1] h-full rounded-full transition-all duration-300"
-                          style={{ width: `${pctRounded}%` }}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <span className="text-[10px] font-bold text-[#94A3B8]">No habits</span>
-                  )}
-                </div>
-              ) : isCurrentMonth && future ? (
-                <div className="w-full flex items-center justify-center my-auto">
-                  <span className="text-xs font-bold text-[#94A3B8] dark:text-[#64748B]">
-                    —
-                  </span>
-                </div>
-              ) : null}
+                  ) : style.level > 0 ? (
+                    <div
+                      className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${
+                        style.level >= 3
+                          ? "bg-white/80"
+                          : "bg-[#166534]/60 dark:bg-[#86EFAC]/70"
+                      }`}
+                    />
+                  ) : null
+                ) : null}
+              </div>
             </div>
           );
         })}

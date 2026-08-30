@@ -1,6 +1,7 @@
-import { LogEntry } from "../types";
+import { LogEntry, Habit } from "../types";
 import dayjs from "dayjs";
 import { DATE_FMT } from "./date";
+import { getTargetForDate } from "./target";
 
 export const isDayComplete = (
   value: number | undefined,
@@ -26,10 +27,23 @@ export const valueMap = (logs: LogEntry[]): Record<string, number> => {
   return map;
 };
 
-// Set of completed date strings for a habit.
-const completedSet = (logs: LogEntry[], target: number | null): Set<string> => {
+// Set of completed date strings for a habit, respecting date-specific targets
+export const completedSet = (
+  logs: LogEntry[],
+  targetOrHabit: number | null | Habit
+): Set<string> => {
   const s = new Set<string>();
-  for (const l of logs) if (isDayComplete(l.value, target)) s.add(l.date);
+  const isHabitObj = typeof targetOrHabit === "object" && targetOrHabit !== null && "id" in targetOrHabit;
+
+  for (const l of logs) {
+    const target = isHabitObj
+      ? getTargetForDate(targetOrHabit as Habit, l.date)
+      : (targetOrHabit as number | null);
+
+    if (isDayComplete(l.value, target)) {
+      s.add(l.date);
+    }
+  }
   return s;
 };
 
@@ -37,9 +51,9 @@ const completedSet = (logs: LogEntry[], target: number | null): Set<string> => {
 // today isn't done yet — so the streak is preserved until end of day).
 export const currentStreak = (
   logs: LogEntry[],
-  target: number | null,
+  targetOrHabit: number | null | Habit,
 ): number => {
-  const done = completedSet(logs, target);
+  const done = completedSet(logs, targetOrHabit);
   if (done.size === 0) return 0;
   let cursor = dayjs();
   if (!done.has(cursor.format(DATE_FMT))) {
@@ -55,9 +69,9 @@ export const currentStreak = (
 
 export const longestStreak = (
   logs: LogEntry[],
-  target: number | null,
+  targetOrHabit: number | null | Habit,
 ): number => {
-  const done = [...completedSet(logs, target)].sort();
+  const done = [...completedSet(logs, targetOrHabit)].sort();
   if (done.length === 0) return 0;
   let best = 1;
   let run = 1;

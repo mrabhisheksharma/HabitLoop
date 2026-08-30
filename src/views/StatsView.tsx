@@ -10,6 +10,7 @@ import { currentWeekDays, isFuture } from "../utils/date";
 import { isDayComplete, currentStreak, longestStreak } from "../utils/streaks";
 import { categoryColor } from "../constants";
 import { computeBadges } from "../utils/badges";
+import { getTargetForDate } from "../utils/target";
 
 export function StatsView() {
   const { activeHabits, getValue, logs } = useHabits();
@@ -33,23 +34,25 @@ export function StatsView() {
       const future = isFuture(d);
       const count = future
         ? 0
-        : activeHabits.filter((h) =>
-            isDayComplete(getValue(h.id, d), h.target_value),
-          ).length;
+        : activeHabits.filter((h) => {
+            const target = getTargetForDate(h, d);
+            return isDayComplete(getValue(h.id, d), target);
+          }).length;
       return { label: dayjs(d).format("ddd"), value: count };
     });
 
     const perHabit = activeHabits
       .map((h) => {
         const habitLogs = logs.filter((l) => l.habit_id === h.id);
-        const cur = currentStreak(habitLogs, h.target_value);
-        const long = longestStreak(habitLogs, h.target_value);
+        const cur = currentStreak(habitLogs, h);
+        const long = longestStreak(habitLogs, h);
         if (cur > 0) activeStreaks++;
         maxGlobalStreak = Math.max(maxGlobalStreak, long, cur);
 
-        const done = elapsedDays.filter((d) =>
-          isDayComplete(getValue(h.id, d), h.target_value),
-        ).length;
+        const done = elapsedDays.filter((d) => {
+          const target = getTargetForDate(h, d);
+          return isDayComplete(getValue(h.id, d), target);
+        }).length;
         completed += done;
         return {
           habit: h,

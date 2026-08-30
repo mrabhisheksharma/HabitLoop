@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Sparkles, RotateCcw } from "lucide-react";
 import { weekDaysForDate, DATE_FMT, prettyDate, isToday, isFuture } from "../utils/date";
 import { useHabits } from "../store/HabitStore";
 import { isDayComplete } from "../utils/streaks";
+import { getTargetForDate } from "../utils/target";
 
 interface Props {
   selectedDate: string;
@@ -32,9 +33,10 @@ export function WeekStrip({ selectedDate, onSelectDate }: Props) {
   // Calculate day completion status
   const getDayStats = (dateStr: string) => {
     if (activeHabits.length === 0) return { ratio: 0, completed: 0, total: 0, isPerfect: false };
-    const completed = activeHabits.filter((h) =>
-      isDayComplete(getValue(h.id, dateStr), h.target_value),
-    ).length;
+    const completed = activeHabits.filter((h) => {
+      const target = getTargetForDate(h, dateStr);
+      return isDayComplete(getValue(h.id, dateStr), target);
+    }).length;
     const total = activeHabits.length;
     const ratio = total > 0 ? completed / total : 0;
     return {

@@ -46,6 +46,7 @@ import {
   completionRatio,
 } from "../utils/streaks";
 import { formatValue, targetLabel, unitLabel } from "../utils/format";
+import { getTargetForDate } from "../utils/target";
 import { categoryColor } from "../constants";
 import { triggerConfetti } from "../utils/confetti";
 import { computeHabitBadges } from "../utils/badges";
@@ -84,11 +85,11 @@ export function HabitDetailView({ habitId, onBack, onEditHabit }: Props) {
   const logs = logsForHabit(habitId);
   const vMap = useMemo(() => valueMap(logs), [logs]);
   const cStreak = useMemo(
-    () => (habit ? currentStreak(logs, habit.target_value) : 0),
+    () => (habit ? currentStreak(logs, habit) : 0),
     [logs, habit],
   );
   const lStreak = useMemo(
-    () => (habit ? longestStreak(logs, habit.target_value) : 0),
+    () => (habit ? longestStreak(logs, habit) : 0),
     [logs, habit],
   );
 
@@ -105,7 +106,7 @@ export function HabitDetailView({ habitId, onBack, onEditHabit }: Props) {
     return days.map((d) => ({
       label: historyRange === 7 ? dayjs(d).format("ddd") : dayjs(d).format("D"),
       value: vMap[d] ?? 0,
-      full: habit ? isDayComplete(vMap[d] ?? 0, habit.target_value) : false,
+      full: habit ? isDayComplete(vMap[d] ?? 0, getTargetForDate(habit, d)) : false,
     }));
   }, [historyRange, vMap, habit]);
 
@@ -126,8 +127,9 @@ export function HabitDetailView({ habitId, onBack, onEditHabit }: Props) {
   }
 
   const currentValue = getValue(habit.id, selectedDate);
-  const isDone = isDayComplete(currentValue, habit.target_value);
-  const ratio = completionRatio(currentValue, habit.target_value);
+  const effectiveTarget = getTargetForDate(habit, selectedDate);
+  const isDone = isDayComplete(currentValue, effectiveTarget);
+  const ratio = completionRatio(currentValue, effectiveTarget);
   const steps = quickSteps(habit);
   const catCol = categoryColor(habit.category);
 
@@ -149,8 +151,8 @@ export function HabitDetailView({ habitId, onBack, onEditHabit }: Props) {
     incrementLog(habit.id, selectedDate, delta);
 
     if (
-      isDayComplete(after, habit.target_value) &&
-      !isDayComplete(before, habit.target_value)
+      isDayComplete(after, effectiveTarget) &&
+      !isDayComplete(before, effectiveTarget)
     ) {
       triggerConfetti();
       show(`${habit.name} goal reached for ${prettyDate(selectedDate)}! 🎉`, "success");
@@ -172,8 +174,8 @@ export function HabitDetailView({ habitId, onBack, onEditHabit }: Props) {
     setLog(habit.id, selectedDate, value);
 
     if (
-      isDayComplete(value, habit.target_value) &&
-      !isDayComplete(before, habit.target_value)
+      isDayComplete(value, effectiveTarget) &&
+      !isDayComplete(before, effectiveTarget)
     ) {
       triggerConfetti();
       show(`${habit.name} goal reached for ${prettyDate(selectedDate)}! 🎉`, "success");
@@ -306,7 +308,7 @@ export function HabitDetailView({ habitId, onBack, onEditHabit }: Props) {
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin">
           {dateStrip.map((d) => {
             const isSelected = selectedDate === d;
-            const done = isDayComplete(vMap[d] ?? 0, habit.target_value);
+            const done = isDayComplete(vMap[d] ?? 0, getTargetForDate(habit, d));
             return (
               <button
                 key={d}
@@ -370,10 +372,10 @@ export function HabitDetailView({ habitId, onBack, onEditHabit }: Props) {
         <div className="mt-4">
           <div className="font-display font-black text-3xl text-[#0F172A] dark:text-[#F8FAFC]">
             {formatValue(currentValue, habit)}
-            {habit.target_value && (
+            {effectiveTarget && (
               <span className="text-base font-bold text-[#64748B] dark:text-[#94A3B8]">
                 {" "}
-                / {targetLabel(habit.target_value, habit)}
+                / {targetLabel(effectiveTarget, habit)}
               </span>
             )}
           </div>

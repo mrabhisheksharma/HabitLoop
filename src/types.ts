@@ -8,6 +8,11 @@ export type TrackingType =
   | "calories"
   | "custom";
 
+export interface TargetHistoryEntry {
+  effective_from: string; // YYYY-MM-DD
+  target_value: number | null;
+}
+
 export interface Habit {
   id: string;
   name: string;
@@ -16,6 +21,7 @@ export interface Habit {
   tracking_type: TrackingType;
   unit?: string; // e.g. "ml", "min", "steps", "km", "pages", "reps", "kcal", "cups"
   target_value: number | null;
+  target_history?: TargetHistoryEntry[]; // Historical target changes
   color: string; // accent hex used for card highlights
   created_at: string; // ISO
   archived: boolean;

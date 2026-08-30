@@ -1,4 +1,4 @@
-import { Habit, TrackingType } from "./types";
+import { Habit, LogEntry, TrackingType } from "./types";
 
 export const EMOJI_CHOICES = [
   "💪", "🏃", "🚶", "🧘", "📚", "✍️", "💧", "🥗",
@@ -282,7 +282,7 @@ export const HABIT_TEMPLATES: HabitTemplate[] = [
 
 const nowIso = () => new Date().toISOString();
 
-// Pre-seeded habits with accurate measurements so the app is immediately useful.
+// 8 Realistic pre-seeded habits
 export const seedHabits = (): Habit[] => [
   {
     id: "seed-water",
@@ -296,6 +296,7 @@ export const seedHabits = (): Habit[] => [
     color: CATEGORY_COLORS.Health,
     created_at: nowIso(),
     archived: false,
+    target_history: [{ effective_from: "2020-01-01", target_value: 2500 }],
   },
   {
     id: "seed-steps",
@@ -305,27 +306,43 @@ export const seedHabits = (): Habit[] => [
     tracking_type: "steps",
     unit: "steps",
     target_value: 10000,
-    quick_increments: [500, 1000, 2500],
+    quick_increments: [1000, 2500, 5000],
     color: CATEGORY_COLORS.Fitness,
     created_at: nowIso(),
     archived: false,
+    target_history: [{ effective_from: "2020-01-01", target_value: 10000 }],
+  },
+  {
+    id: "seed-meditation",
+    name: "Morning Meditation",
+    icon: "🧘",
+    category: "Mindfulness",
+    tracking_type: "duration",
+    unit: "min",
+    target_value: 15,
+    quick_increments: [5, 10, 15],
+    color: CATEGORY_COLORS.Mindfulness,
+    created_at: nowIso(),
+    archived: false,
+    target_history: [{ effective_from: "2020-01-01", target_value: 15 }],
   },
   {
     id: "seed-reading",
-    name: "Reading",
+    name: "Book Reading",
     icon: "📚",
     category: "Learning",
-    tracking_type: "duration",
-    unit: "min",
-    target_value: 30,
-    quick_increments: [10, 15, 30],
+    tracking_type: "pages",
+    unit: "pages",
+    target_value: 20,
+    quick_increments: [5, 10, 20],
     color: CATEGORY_COLORS.Learning,
     created_at: nowIso(),
     archived: false,
+    target_history: [{ effective_from: "2020-01-01", target_value: 20 }],
   },
   {
     id: "seed-pushups",
-    name: "Pushups",
+    name: "Upper Body Pushups",
     icon: "💪",
     category: "Fitness",
     tracking_type: "reps",
@@ -335,5 +352,93 @@ export const seedHabits = (): Habit[] => [
     color: CATEGORY_COLORS.Fitness,
     created_at: nowIso(),
     archived: false,
+    target_history: [{ effective_from: "2020-01-01", target_value: 50 }],
+  },
+  {
+    id: "seed-focus",
+    name: "Deep Focus Coding",
+    icon: "💻",
+    category: "Learning",
+    tracking_type: "duration",
+    unit: "min",
+    target_value: 60,
+    quick_increments: [15, 30, 60],
+    color: CATEGORY_COLORS.Learning,
+    created_at: nowIso(),
+    archived: false,
+    target_history: [{ effective_from: "2020-01-01", target_value: 60 }],
+  },
+  {
+    id: "seed-sleep",
+    name: "Healthy Sleep",
+    icon: "😴",
+    category: "Health",
+    tracking_type: "duration",
+    unit: "hours",
+    target_value: 8,
+    quick_increments: [1, 2, 4],
+    color: CATEGORY_COLORS.Health,
+    created_at: nowIso(),
+    archived: false,
+    target_history: [{ effective_from: "2020-01-01", target_value: 8 }],
+  },
+  {
+    id: "seed-journal",
+    name: "Daily Gratitude Journal",
+    icon: "✍️",
+    category: "Mindfulness",
+    tracking_type: "duration",
+    unit: "min",
+    target_value: 10,
+    quick_increments: [3, 5, 10],
+    color: CATEGORY_COLORS.Mindfulness,
+    created_at: nowIso(),
+    archived: false,
+    target_history: [{ effective_from: "2020-01-01", target_value: 10 }],
   },
 ];
+
+export const seedLogs = (todayDateStr?: string): LogEntry[] => {
+  const logs: LogEntry[] = [];
+  const habits = seedHabits();
+  
+  // Create realistic logs for the past 7 days + today
+  for (let i = 7; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    const isToday = i === 0;
+
+    habits.forEach((h, hIdx) => {
+      let val = 0;
+      if (isToday) {
+        // Some completed, some partial, some fresh
+        if (hIdx === 0) val = 1500; // Water partial
+        else if (hIdx === 1) val = 6000; // Steps partial
+        else if (hIdx === 2) val = 15; // Meditation complete
+        else if (hIdx === 6) val = 8; // Sleep complete
+        else if (hIdx === 4) val = 25; // Pushups partial
+        else val = 0;
+      } else {
+        // Past days completions with high consistency
+        if (hIdx % 4 === i % 3) {
+          val = Math.round((h.target_value || 1) * 0.7); // Partial day
+        } else {
+          val = h.target_value || 1; // Completed day
+        }
+      }
+
+      if (val > 0) {
+        logs.push({
+          id: `log-${h.id}-${dateStr}`,
+          habit_id: h.id,
+          date: dateStr,
+          value: val,
+          created_at: new Date().toISOString(),
+        });
+      }
+    });
+  }
+
+  return logs;
+};
